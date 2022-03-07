@@ -30,8 +30,6 @@ void InitializeResultantMatrix(int**& ResultantMatrix, const int& ResultantMatri
 int main()
 {
 	srand(time(NULL));
-	int LeftMatrixSizeN, LeftMatrixSizeM, RightMatrixSizeN, RightMatrixSizeM, ReducedMatrixSize = 2;
-	bool ManuallyInput;
 	system("chcp 1251");
 
 	Greetings();
@@ -40,6 +38,7 @@ int main()
 
 	return 0;
 }
+
 
 void Greetings() {
 	cout << "Вас приветствует программа" << endl <<
