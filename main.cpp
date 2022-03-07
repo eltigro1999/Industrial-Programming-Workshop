@@ -10,19 +10,31 @@ void CreateMatrix(int**& Matrix, const int& N, const int& M);
 void FillMatrixManually(int**& Matrix, const int& N, const int& M);
 void RandomFillMatrix(int**& Matrix, const int& N, const int& M);
 void DrawMatrix(const std::string& MatrixName, int**& const Matrix, const int& N, const int& M);
-
-void CreateAndFillReducedMatrix(int**& ReducedMatrix, const int& ReducedMatrixSize, int**& const Matrix,const int& MatrixSizeN, const int& MatrixSizeM) {
-	ReducedMatrix= new int* [ReducedMatrixSize];
-	for (int i = 0; i < ReducedMatrixSize; i++)
+void FillReducedMatrix(int**& ReducedMatrix, const int& ReducedMatrixSize, int**& const Matrix, const int& MatrixSizeN, const int& MatrixSizeM);
+void FillSubmatrix1(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix);
+void FillSubmatrix2(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix);
+void FillSubmatrix3(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix);
+void FillSubmatrix4(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix);
+void FormatResultantMatrix(int**& const ResultantMatrix, const int& InitialMatrixSize, int& CurrentPosition, int& FormattedMatrixSize);
+void DefineIntermediateMatrixValues25(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1, int**& const LeftSubmatrix2,
+	int**& const RightSubmatrix, const int& i, const int& j) {
+	for (int z = 0; z < MatrixToChangeSize; z++)
 	{
-		ReducedMatrix[i] = new int[ReducedMatrixSize];
-		for (int j = 0; j < ReducedMatrixSize; j++)
-			ReducedMatrix[i][j] = 0;
+		MatrixToChange[i][j] += (LeftSubmatrix1[i][z] + LeftSubmatrix2[i][z]) * RightSubmatrix[z][j];
 	}
-	for (int i = 0; i < MatrixSizeN; i++)
+}
+void DefineIntermediateMatrixValues34(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix, int**& const RightSubmatrix1,
+	int**& const RightSubmatrix2, const int& i, const int& j) {
+	for (int z = 0; z < MatrixToChangeSize; z++)
 	{
-		for (int j = 0; j < MatrixSizeM; j++)
-			ReducedMatrix[i][j] = Matrix[i][j];
+		MatrixToChange[i][j] += LeftSubmatrix[i][z] * (RightSubmatrix1[z][j] - RightSubmatrix2[z][j]);
+	}
+}
+void DefineIntermediateMatrixValues67(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1, int**& const LeftSubmatrix2,
+	int**& const RightSubmatrix1, int**& const RightSubmatrix2, const int& i, const int& j) {
+	for (int z = 0; z < MatrixToChangeSize; z++)
+	{
+		MatrixToChange[i][j] += (LeftSubmatrix1[i][z] - LeftSubmatrix2[i][z]) * (RightSubmatrix1[z][j] + RightSubmatrix2[z][j]);
 	}
 }
 
@@ -31,157 +43,101 @@ void CreateAndFillReducedMatrix(int**& ReducedMatrix, const int& ReducedMatrixSi
 void main()
 {
 	srand(time(NULL));
-	int FirstMatrixSizeN, FirstMatrixSizeM, SecondMatrixSizeN, SecondMatrixSizeM, ReducedMatrixSize = 2;
+	int LeftMatrixSizeN, LeftMatrixSizeM, RightMatrixSizeN, RightMatrixSizeM, ReducedMatrixSize = 2;
 	bool ManuallyInput;
 	system("chcp 1251");
-	
+
 	Greetings();
 
-	InputMatrixSize(FirstMatrixSizeN, FirstMatrixSizeM, std::string("первой"));
-	InputMatrixSize(SecondMatrixSizeN, SecondMatrixSizeM, std::string("второй"));
+	InputMatrixSize(LeftMatrixSizeN, LeftMatrixSizeM, std::string("первой"));
+	InputMatrixSize(RightMatrixSizeN, RightMatrixSizeM, std::string("второй"));
 
-	int** FirstMatrix;
-	int** SecondMatrix;
-	CreateMatrix(FirstMatrix, FirstMatrixSizeN, FirstMatrixSizeM);
-	CreateMatrix(SecondMatrix, SecondMatrixSizeN, SecondMatrixSizeM);
+	int** LeftMatrix;
+	int** RightMatrix;
+	CreateMatrix(LeftMatrix, LeftMatrixSizeN, LeftMatrixSizeM);
+	CreateMatrix(RightMatrix, RightMatrixSizeN, RightMatrixSizeM);
 
-	///////////////////////////////////////////////////////////////////////////////
-	////////////////Выбор способа заполнения и заполнение матриц///////////////////
-	///////////////////////////////////////////////////////////////////////////////
 
 	cout << "Выберите способ заполнения матриц\n" <<
-		"0 - Случайным образом\n"<<
+		"0 - Случайным образом\n" <<
 		"Любое число, отличное от нуля - Вручную \n";
 
 	cin >> ManuallyInput;
-	
+
 	if (ManuallyInput) {
-		FillMatrixManually(FirstMatrix, FirstMatrixSizeN, FirstMatrixSizeM);
-		FillMatrixManually(SecondMatrix, SecondMatrixSizeN, SecondMatrixSizeM);
-	}else {
-		RandomFillMatrix(FirstMatrix, FirstMatrixSizeN, FirstMatrixSizeM);
-		RandomFillMatrix(SecondMatrix, SecondMatrixSizeN, SecondMatrixSizeM);
+		FillMatrixManually(LeftMatrix, LeftMatrixSizeN, LeftMatrixSizeM);
+		FillMatrixManually(RightMatrix, RightMatrixSizeN, RightMatrixSizeM);
 	}
-	DrawMatrix(std::string("Матрица 1"), FirstMatrix, FirstMatrixSizeN, FirstMatrixSizeM);
-	DrawMatrix(std::string("Матрица 2"), SecondMatrix, SecondMatrixSizeN, SecondMatrixSizeM);
+	else {
+		RandomFillMatrix(LeftMatrix, LeftMatrixSizeN, LeftMatrixSizeM);
+		RandomFillMatrix(RightMatrix, RightMatrixSizeN, RightMatrixSizeM);
+	}
+	DrawMatrix(std::string("Матрица 1"), LeftMatrix, LeftMatrixSizeN, LeftMatrixSizeM);
+	DrawMatrix(std::string("Матрица 2"), RightMatrix, RightMatrixSizeN, RightMatrixSizeM);
 
-	///////////////////////////////////////////////////////////////////////////////
-	/////////////////Приведение матриц к требуемому размеру////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
 
-	while (ReducedMatrixSize < FirstMatrixSizeN || ReducedMatrixSize < SecondMatrixSizeN 
-		|| ReducedMatrixSize < FirstMatrixSizeM || ReducedMatrixSize < SecondMatrixSizeM)
+	while (ReducedMatrixSize < LeftMatrixSizeN || ReducedMatrixSize < RightMatrixSizeN
+		|| ReducedMatrixSize < LeftMatrixSizeM || ReducedMatrixSize < RightMatrixSizeM)
 		ReducedMatrixSize *= 2;
-	int** FirstMatrixReduced;
-	int** SecondMatrixReduced;
-	CreateAndFillReducedMatrix(FirstMatrixReduced, ReducedMatrixSize, FirstMatrix, FirstMatrixSizeN, FirstMatrixSizeM);
-	CreateAndFillReducedMatrix(SecondMatrixReduced, ReducedMatrixSize, SecondMatrix, SecondMatrixSizeN, SecondMatrixSizeM);
-	
+	int** LeftMatrixReduced;
+	int** RightMatrixReduced;
+	CreateMatrix(LeftMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
+	CreateMatrix(RightMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
+	FillReducedMatrix(LeftMatrixReduced, ReducedMatrixSize, LeftMatrix, LeftMatrixSizeN, LeftMatrixSizeM);
+	FillReducedMatrix(RightMatrixReduced, ReducedMatrixSize, RightMatrix, RightMatrixSizeN, RightMatrixSizeM);
+
 	cout << "Приведенные матрицы\n";
-	DrawMatrix(std::string("Матрица 1"), FirstMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
-	DrawMatrix(std::string("Матрица 2"), SecondMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
-	
+	DrawMatrix(std::string("Матрица 1"), LeftMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
+	DrawMatrix(std::string("Матрица 2"), RightMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
 
-	///////////////////////////////////////////////////////////////////////////////
-	///////////////Разбиение матриц на подматрицы и их заполнение//////////////////
-	///////////////////////////////////////////////////////////////////////////////
+	/////////////////////
 
-	int** mat1 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat1[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat1[i][j] = FirstMatrixReduced[i][j];
-	}
-	int** mat2 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat2[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat2[i][j] = FirstMatrixReduced[i][j + ReducedMatrixSize / 2];
-	}
-	int** mat3 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat3[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat3[i][j] = FirstMatrixReduced[i + ReducedMatrixSize / 2][j];
-	}
-	int** mat4 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat4[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat4[i][j] = FirstMatrixReduced[i + ReducedMatrixSize / 2][j + ReducedMatrixSize / 2];
-	}
-	int** mat5 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat5[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat5[i][j] = SecondMatrixReduced[i][j];
-	}
-	int** mat6 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat6[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat6[i][j] = SecondMatrixReduced[i][j + ReducedMatrixSize / 2];
-	}
-	int** mat7 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat7[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat7[i][j] = SecondMatrixReduced[i + ReducedMatrixSize / 2][j];
-	}
-	int** mat8 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat8[i] = new int[ReducedMatrixSize / 2];
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-			mat8[i][j] = SecondMatrixReduced[i + ReducedMatrixSize / 2][j + ReducedMatrixSize / 2];
-	}
+	int** LeftSubmatrix1;
+	int** LeftSubmatrix2;
+	int** LeftSubmatrix3;
+	int** LeftSubmatrix4;
+	int** RightSubmatrix1;
+	int** RightSubmatrix2;
+	int** RightSubmatrix3;
+	int** RightSubmatrix4;
+
+	CreateMatrix(LeftSubmatrix1, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(RightSubmatrix1, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(LeftSubmatrix2, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(RightSubmatrix2, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(LeftSubmatrix3, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(RightSubmatrix3, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(LeftSubmatrix4, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(RightSubmatrix4, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+
+	FillSubmatrix1(LeftSubmatrix1, ReducedMatrixSize / 2, LeftMatrixReduced);
+	FillSubmatrix1(RightSubmatrix1, ReducedMatrixSize / 2, RightMatrixReduced);
+	FillSubmatrix2(LeftSubmatrix2, ReducedMatrixSize / 2, LeftMatrixReduced);
+	FillSubmatrix2(RightSubmatrix2, ReducedMatrixSize / 2, RightMatrixReduced);
+	FillSubmatrix3(LeftSubmatrix3, ReducedMatrixSize / 2, LeftMatrixReduced);
+	FillSubmatrix3(RightSubmatrix3, ReducedMatrixSize / 2, RightMatrixReduced);
+	FillSubmatrix4(LeftSubmatrix4, ReducedMatrixSize / 2, LeftMatrixReduced);
+	FillSubmatrix4(RightSubmatrix4, ReducedMatrixSize / 2, RightMatrixReduced);
 
 	///////////////////////////////////////////////////////////////////////////////
 	////////////////////////Создание промежуточных матриц//////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
 
-	int** p1 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p1[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** p2 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p2[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** p3 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p3[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** p4 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p4[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** p5 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p5[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** p6 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p6[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** p7 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		p7[i] = new int[ReducedMatrixSize / 2];
-	}
+	int** IntermediateMatrix1;
+	int** IntermediateMatrix2;
+	int** IntermediateMatrix3;
+	int** IntermediateMatrix4;
+	int** IntermediateMatrix5;
+	int** IntermediateMatrix6;
+	int** IntermediateMatrix7;
+
+	CreateMatrix(IntermediateMatrix1, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(IntermediateMatrix2, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(IntermediateMatrix3, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(IntermediateMatrix4, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(IntermediateMatrix5, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(IntermediateMatrix6, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(IntermediateMatrix7, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
 
 	///////////////////////////////////////////////////////////////////////////////
 	////////////////////Вычисление значений промежуточных матриц///////////////////
@@ -191,47 +147,30 @@ void main()
 	{
 		for (int j = 0; j < ReducedMatrixSize / 2; j++)
 		{
-			p1[i][j] = 0;
-			for (int z = 0; z < ReducedMatrixSize / 2; z++)
-			{
-				p1[i][j] += (mat1[i][z] + mat4[i][z]) * (mat5[z][j] + mat8[z][j]);
-			}
+			IntermediateMatrix1[i][j] = 0;
+			IntermediateMatrix2[i][j] = 0;
+			IntermediateMatrix3[i][j] = 0;
+			IntermediateMatrix4[i][j] = 0;
+			IntermediateMatrix5[i][j] = 0;
+			IntermediateMatrix6[i][j] = 0;
+			IntermediateMatrix7[i][j] = 0;
 
-			p2[i][j] = 0;
 			for (int z = 0; z < ReducedMatrixSize / 2; z++)
 			{
-				p2[i][j] += (mat3[i][z] + mat4[i][z]) * mat5[z][j];
+				IntermediateMatrix1[i][j] += (LeftSubmatrix1[i][z] + LeftSubmatrix4[i][z]) * (RightSubmatrix1[z][j] + RightSubmatrix4[z][j]);
 			}
-
-			p3[i][j] = 0;
-			for (int z = 0; z < ReducedMatrixSize / 2; z++)
-			{
-				p3[i][j] += mat1[i][z] * (mat6[z][j] - mat8[z][j]);
-			}
-
-			p4[i][j] = 0;
-			for (int z = 0; z < ReducedMatrixSize / 2; z++)
-			{
-				p4[i][j] += mat4[i][z] * (mat7[z][j] - mat5[z][j]);
-			}
-
-			p5[i][j] = 0;
-			for (int z = 0; z < ReducedMatrixSize / 2; z++)
-			{
-				p5[i][j] += (mat1[i][z] + mat2[i][z]) * mat8[z][j];
-			}
-
-			p6[i][j] = 0;
-			for (int z = 0; z < ReducedMatrixSize / 2; z++)
-			{
-				p6[i][j] += (mat3[i][z] - mat1[i][z]) * (mat5[z][j] + mat6[z][j]);
-			}
-
-			p7[i][j] = 0;
-			for (int z = 0; z < ReducedMatrixSize / 2; z++)
-			{
-				p7[i][j] += (mat2[i][z] - mat4[i][z]) * (mat7[z][j] + mat8[z][j]);
-			}
+			DefineIntermediateMatrixValues25(IntermediateMatrix2, ReducedMatrixSize / 2, LeftSubmatrix3,
+				LeftSubmatrix4, RightSubmatrix1, i, j);
+			DefineIntermediateMatrixValues34(IntermediateMatrix3, ReducedMatrixSize / 2, LeftSubmatrix1,
+				RightSubmatrix2, RightSubmatrix4, i, j);
+			DefineIntermediateMatrixValues34(IntermediateMatrix3, ReducedMatrixSize / 2, LeftSubmatrix4,
+				RightSubmatrix3, RightSubmatrix1, i, j);
+			DefineIntermediateMatrixValues25(IntermediateMatrix5, ReducedMatrixSize / 2, LeftSubmatrix1,
+				LeftSubmatrix2, RightSubmatrix4, i, j);
+			DefineIntermediateMatrixValues67(IntermediateMatrix6, ReducedMatrixSize / 2, LeftSubmatrix3,
+				LeftSubmatrix1, RightSubmatrix1, RightSubmatrix2, i, j);
+			DefineIntermediateMatrixValues67(IntermediateMatrix7, ReducedMatrixSize / 2, LeftSubmatrix2,
+				LeftSubmatrix4, RightSubmatrix3, RightSubmatrix4, i, j);
 		}
 	}
 
@@ -239,26 +178,14 @@ void main()
 	///////////////////////Создание вспомогательных матриц/////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
 
-	int** mat9 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat9[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** mat10 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat10[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** mat11 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat11[i] = new int[ReducedMatrixSize / 2];
-	}
-	int** mat12 = new int* [ReducedMatrixSize / 2];
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		mat12[i] = new int[ReducedMatrixSize / 2];
-	}
+	int** AuxiliaryMatrix1;
+	int** AuxiliaryMatrix2;
+	int** AuxiliaryMatrix3;
+	int** AuxiliaryMatrix4;
+	CreateMatrix(AuxiliaryMatrix1, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(AuxiliaryMatrix2, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(AuxiliaryMatrix3, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
+	CreateMatrix(AuxiliaryMatrix4, ReducedMatrixSize / 2, ReducedMatrixSize / 2);
 
 	///////////////////////////////////////////////////////////////////////////////
 	////////////Подсчет значений вспомогательных матриц из промежуточных///////////
@@ -268,10 +195,10 @@ void main()
 	{
 		for (int j = 0; j < ReducedMatrixSize / 2; j++)
 		{
-			mat9[i][j] = p1[i][j] + p4[i][j] - p5[i][j] + p7[i][j];
-			mat10[i][j] = p3[i][j] + p5[i][j];
-			mat11[i][j] = p2[i][j] + p4[i][j];
-			mat12[i][j] = p1[i][j] - p2[i][j] + p3[i][j] + p6[i][j];
+			AuxiliaryMatrix1[i][j] = IntermediateMatrix1[i][j] + IntermediateMatrix4[i][j] - IntermediateMatrix5[i][j] + IntermediateMatrix7[i][j];
+			AuxiliaryMatrix2[i][j] = IntermediateMatrix3[i][j] + IntermediateMatrix5[i][j];
+			AuxiliaryMatrix3[i][j] = IntermediateMatrix2[i][j] + IntermediateMatrix4[i][j];
+			AuxiliaryMatrix4[i][j] = IntermediateMatrix1[i][j] - IntermediateMatrix2[i][j] + IntermediateMatrix3[i][j] + IntermediateMatrix6[i][j];
 		}
 	}
 
@@ -279,11 +206,8 @@ void main()
 	///////////////////Создание результирующей матрицы/////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
 
-	int** M5 = new int* [ReducedMatrixSize];
-	for (int i = 0; i < ReducedMatrixSize; i++)
-	{
-		M5[i] = new int[ReducedMatrixSize];
-	}
+	int** ResultantMatrix;
+	CreateMatrix(ResultantMatrix, ReducedMatrixSize, ReducedMatrixSize);
 
 	///////////////////////////////////////////////////////////////////////////////
 	///////Занесение информации из вспомогательных матриц в результирующую/////////
@@ -293,10 +217,10 @@ void main()
 	{
 		for (int j = 0; j < ReducedMatrixSize / 2; j++)
 		{
-			M5[i][j] = mat9[i][j];
-			M5[i][j + ReducedMatrixSize / 2] = mat10[i][j];
-			M5[i + ReducedMatrixSize / 2][j] = mat11[i][j];
-			M5[i + ReducedMatrixSize / 2][j + ReducedMatrixSize / 2] = mat12[i][j];
+			ResultantMatrix[i][j] = AuxiliaryMatrix1[i][j];
+			ResultantMatrix[i][j + ReducedMatrixSize / 2] = AuxiliaryMatrix2[i][j];
+			ResultantMatrix[i + ReducedMatrixSize / 2][j] = AuxiliaryMatrix3[i][j];
+			ResultantMatrix[i + ReducedMatrixSize / 2][j + ReducedMatrixSize / 2] = AuxiliaryMatrix4[i][j];
 		}
 	}
 
@@ -304,103 +228,65 @@ void main()
 	////////////////Выравнивание границ результирующей матрицы/////////////////////
 	///////////////////////////////////////////////////////////////////////////////
 
-	int x = 0, f = 100, s = 100;
-	for (int i = 0; i < ReducedMatrixSize; i++)
-	{
-		x = 0;
-		for (int j = 0; j < ReducedMatrixSize; j++)
-		{
-			if (M5[i][j] != 0)
-			{
-				x++;
-				f = 100;
-			}
-		}
-		if (x == 0 && i < f)
-		{
-			f = i;
-		}
-	}
-	for (int i = 0; i < ReducedMatrixSize; i++)
-	{
-		x = 0;
-		for (int j = 0; j < ReducedMatrixSize; j++)
-		{
-			if (M5[j][i] != 0)
-			{
-				x++;
-				s = 100;
-			}
-		}
-		if (x == 0 && i < s)
-		{
-			s = i;
-		}
-	}
+	int CurrentPosition = 0, FinalRowAmount = 100, FinalColumnAmount = 100;
+	FormatResultantMatrix(ResultantMatrix, ReducedMatrixSize, CurrentPosition, FinalRowAmount);
+	FormatResultantMatrix(ResultantMatrix, ReducedMatrixSize, CurrentPosition, FinalColumnAmount);
 
-	int** M6 = new int* [f];
-	for (int i = 0; i < f; i++)
+	int** FormattedResultantMatrix;
+	CreateMatrix(FormattedResultantMatrix, FinalRowAmount, FinalColumnAmount);
+	for (int i = 0; i < FinalRowAmount; i++)
 	{
-		M6[i] = new int[s];
-		for (int j = 0; j < s; j++)
-			M6[i][j] = M5[i][j];
+		for (int j = 0; j < FinalColumnAmount; j++)
+			FormattedResultantMatrix[i][j] = ResultantMatrix[i][j];
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
 	///////////////////Вывод результирующей матрицы////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
-
-	cout << "\nРезультирующая матрица\n\n";
-	for (int i = 0; i < f; i++)
-	{
-		for (int j = 0; j < s; j++)
-			cout << M6[i][j] << " ";
-		cout << endl;
-	}
-
+	DrawMatrix(std::string("Результирующая матрица"), FormattedResultantMatrix, FinalRowAmount, FinalColumnAmount);
 	system("pause");
 
 	///////////////////////////////////////////////////////////////////////////////
 	/////////////////////Очистка динамической памяти///////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
-	
-	for (int i = 0; i < FirstMatrixSizeN; i++)
-		delete[] FirstMatrix[i];
-	for (int i = 0; i < SecondMatrixSizeN; i++)
-		delete[] SecondMatrix[i];
+
+	for (int i = 0; i < LeftMatrixSizeN; i++)
+		delete[] LeftMatrix[i];
+	for (int i = 0; i < RightMatrixSizeN; i++)
+		delete[] RightMatrix[i];
 	for (int i = 0; i < ReducedMatrixSize; i++)
 	{
-		delete[] FirstMatrixReduced[i];
-		delete[] SecondMatrixReduced[i];
-		delete[] M5[i];
+		delete[] LeftMatrixReduced[i];
+		delete[] RightMatrixReduced[i];
+		delete[] ResultantMatrix[i];
 	}
-	for (int i = 0; i < f; i++)
-		delete[] M6[i];
+	for (int i = 0; i < FinalRowAmount; i++)
+		delete[] FormattedResultantMatrix[i];
 	for (int i = 0; i < ReducedMatrixSize / 2; i++)
 	{
-		delete[] mat1[i];
-		delete[] mat2[i];
-		delete[] mat3[i];
-		delete[] mat4[i];
-		delete[] mat5[i];
-		delete[] mat6[i];
-		delete[] mat7[i];
-		delete[] mat8[i];
-		delete[] mat9[i];
-		delete[] mat10[i];
-		delete[] mat11[i];
-		delete[] mat12[i];
-		delete[] p1[i];
-		delete[] p2[i];
-		delete[] p3[i];
-		delete[] p4[i];
-		delete[] p5[i];
-		delete[] p6[i];
-		delete[] p7[i];
+		delete[] LeftSubmatrix1[i];
+		delete[] LeftSubmatrix2[i];
+		delete[] LeftSubmatrix3[i];
+		delete[] LeftSubmatrix4[i];
+		delete[] RightSubmatrix1[i];
+		delete[] RightSubmatrix2[i];
+		delete[] RightSubmatrix3[i];
+		delete[] RightSubmatrix4[i];
+		delete[] AuxiliaryMatrix1[i];
+		delete[] AuxiliaryMatrix2[i];
+		delete[] AuxiliaryMatrix3[i];
+		delete[] AuxiliaryMatrix4[i];
+		delete[] IntermediateMatrix1[i];
+		delete[] IntermediateMatrix2[i];
+		delete[] IntermediateMatrix3[i];
+		delete[] IntermediateMatrix4[i];
+		delete[] IntermediateMatrix5[i];
+		delete[] IntermediateMatrix6[i];
+		delete[] IntermediateMatrix7[i];
 	}
-	delete[] FirstMatrix, SecondMatrix, FirstMatrixReduced, SecondMatrixReduced, M5, M6;
-	delete[] mat1, mat2, mat3, mat4, mat5, mat6, mat7, mat8, mat9, mat10, mat11, mat12;
-	delete[] p1, p2, p3, p4, p5, p6, p7;
+	delete[] LeftMatrix, RightMatrix, LeftMatrixReduced, RightMatrixReduced, ResultantMatrix, FormattedResultantMatrix;
+	delete[] LeftSubmatrix1, LeftSubmatrix2, LeftSubmatrix3, LeftSubmatrix4, RightSubmatrix1, RightSubmatrix2, RightSubmatrix3, RightSubmatrix4, AuxiliaryMatrix1, AuxiliaryMatrix2, AuxiliaryMatrix3, AuxiliaryMatrix4;
+	delete[] IntermediateMatrix1, IntermediateMatrix2, IntermediateMatrix3, IntermediateMatrix4, IntermediateMatrix5, IntermediateMatrix6, IntermediateMatrix7;
 }
 
 void Greetings() {
@@ -441,5 +327,69 @@ void DrawMatrix(const std::string& MatrixName, int**& const Matrix, const int& N
 		for (int j = 0; j < M; j++)
 			cout << Matrix[i][j] << " ";
 		cout << endl;
+	}
+}
+
+void FillReducedMatrix(int**& ReducedMatrix, const int& ReducedMatrixSize, int**& const Matrix, const int& MatrixSizeN, const int& MatrixSizeM) {
+	for (int i = 0; i < ReducedMatrixSize; i++)
+	{
+		for (int j = 0; j < ReducedMatrixSize; j++)
+			ReducedMatrix[i][j] = 0;
+	}
+	for (int i = 0; i < MatrixSizeN; i++)
+	{
+		for (int j = 0; j < MatrixSizeM; j++)
+			ReducedMatrix[i][j] = Matrix[i][j];
+	}
+}
+
+void FillSubmatrix1(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix) {
+	for (int i = 0; i < SubmatrixSize; i++)
+	{
+		for (int j = 0; j < SubmatrixSize; j++)
+			Submatrix[i][j] = ReducedMatrix[i][j];
+	}
+}
+
+void FillSubmatrix2(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix) {
+	for (int i = 0; i < SubmatrixSize; i++)
+	{
+		for (int j = 0; j < SubmatrixSize; j++)
+			Submatrix[i][j] = ReducedMatrix[i][j + SubmatrixSize];
+	}
+}
+
+void FillSubmatrix3(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix) {
+	for (int i = 0; i < SubmatrixSize; i++)
+	{
+		for (int j = 0; j < SubmatrixSize; j++)
+			Submatrix[i][j] = ReducedMatrix[i + SubmatrixSize][j];
+	}
+}
+
+void FillSubmatrix4(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix) {
+	for (int i = 0; i < SubmatrixSize; i++)
+	{
+		for (int j = 0; j < SubmatrixSize; j++)
+			Submatrix[i][j] = ReducedMatrix[i + SubmatrixSize][j + SubmatrixSize];
+	}
+}
+
+void FormatResultantMatrix(int**& const ResultantMatrix, const int& InitialMatrixSize, int& CurrentPosition, int& FormattedMatrixSize) {
+	for (int i = 0; i < InitialMatrixSize; i++)
+	{
+		CurrentPosition = 0;
+		for (int j = 0; j < InitialMatrixSize; j++)
+		{
+			if (ResultantMatrix[j][i] != 0)
+			{
+				CurrentPosition++;
+				FormattedMatrixSize = 100;
+			}
+		}
+		if (CurrentPosition == 0 && i < FormattedMatrixSize)
+		{
+			FormattedMatrixSize = i;
+		}
 	}
 }
