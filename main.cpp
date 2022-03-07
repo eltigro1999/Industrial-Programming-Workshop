@@ -16,29 +16,13 @@ void FillSubmatrix2(int**& Submatrix, const int& SubmatrixSize, int**& const Red
 void FillSubmatrix3(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix);
 void FillSubmatrix4(int**& Submatrix, const int& SubmatrixSize, int**& const ReducedMatrix);
 void FormatResultantMatrix(int**& const ResultantMatrix, const int& InitialMatrixSize, int& CurrentPosition, int& FormattedMatrixSize);
-void DefineIntermediateMatrixValues25(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1, int**& const LeftSubmatrix2,
-	int**& const RightSubmatrix, const int& i, const int& j) {
-	for (int z = 0; z < MatrixToChangeSize; z++)
-	{
-		MatrixToChange[i][j] += (LeftSubmatrix1[i][z] + LeftSubmatrix2[i][z]) * RightSubmatrix[z][j];
-	}
-}
-void DefineIntermediateMatrixValues34(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix, int**& const RightSubmatrix1,
-	int**& const RightSubmatrix2, const int& i, const int& j) {
-	for (int z = 0; z < MatrixToChangeSize; z++)
-	{
-		MatrixToChange[i][j] += LeftSubmatrix[i][z] * (RightSubmatrix1[z][j] - RightSubmatrix2[z][j]);
-	}
-}
-void DefineIntermediateMatrixValues67(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1, int**& const LeftSubmatrix2,
-	int**& const RightSubmatrix1, int**& const RightSubmatrix2, const int& i, const int& j) {
-	for (int z = 0; z < MatrixToChangeSize; z++)
-	{
-		MatrixToChange[i][j] += (LeftSubmatrix1[i][z] - LeftSubmatrix2[i][z]) * (RightSubmatrix1[z][j] + RightSubmatrix2[z][j]);
-	}
-}
-
-
+void DefineIntermediateMatrixValues25(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1,
+	int**& const LeftSubmatrix2, int**& const RightSubmatrix, const int& i, const int& j);
+void DefineIntermediateMatrixValues34(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix,
+	int**& const RightSubmatrix1, int**& const RightSubmatrix2, const int& i, const int& j);
+void DefineIntermediateMatrixValues67(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1,
+	int**& const LeftSubmatrix2, int**& const RightSubmatrix1, int**& const RightSubmatrix2, const int& i, const int& j);
+void InitializeResultantMatrix(int**& ResultantMatrix, const int& ResultantMatrixHalfSize, int**& const AuxiliaryMatrix1, int**& const AuxiliaryMatrix2, int**& const AuxiliaryMatrix3, int**& const AuxiliaryMatrix4);
 
 void main()
 {
@@ -81,16 +65,16 @@ void main()
 		ReducedMatrixSize *= 2;
 	int** LeftMatrixReduced;
 	int** RightMatrixReduced;
+	
 	CreateMatrix(LeftMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
 	CreateMatrix(RightMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
+	
 	FillReducedMatrix(LeftMatrixReduced, ReducedMatrixSize, LeftMatrix, LeftMatrixSizeN, LeftMatrixSizeM);
 	FillReducedMatrix(RightMatrixReduced, ReducedMatrixSize, RightMatrix, RightMatrixSizeN, RightMatrixSizeM);
 
 	cout << "Приведенные матрицы\n";
 	DrawMatrix(std::string("Матрица 1"), LeftMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
 	DrawMatrix(std::string("Матрица 2"), RightMatrixReduced, ReducedMatrixSize, ReducedMatrixSize);
-
-	/////////////////////
 
 	int** LeftSubmatrix1;
 	int** LeftSubmatrix2;
@@ -119,9 +103,6 @@ void main()
 	FillSubmatrix4(LeftSubmatrix4, ReducedMatrixSize / 2, LeftMatrixReduced);
 	FillSubmatrix4(RightSubmatrix4, ReducedMatrixSize / 2, RightMatrixReduced);
 
-	///////////////////////////////////////////////////////////////////////////////
-	////////////////////////Создание промежуточных матриц//////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
 
 	int** IntermediateMatrix1;
 	int** IntermediateMatrix2;
@@ -174,9 +155,6 @@ void main()
 		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////
-	///////////////////////Создание вспомогательных матриц/////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
 
 	int** AuxiliaryMatrix1;
 	int** AuxiliaryMatrix2;
@@ -202,31 +180,10 @@ void main()
 		}
 	}
 
-	///////////////////////////////////////////////////////////////////////////////
-	///////////////////Создание результирующей матрицы/////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
-
 	int** ResultantMatrix;
 	CreateMatrix(ResultantMatrix, ReducedMatrixSize, ReducedMatrixSize);
 
-	///////////////////////////////////////////////////////////////////////////////
-	///////Занесение информации из вспомогательных матриц в результирующую/////////
-	///////////////////////////////////////////////////////////////////////////////
-
-	for (int i = 0; i < ReducedMatrixSize / 2; i++)
-	{
-		for (int j = 0; j < ReducedMatrixSize / 2; j++)
-		{
-			ResultantMatrix[i][j] = AuxiliaryMatrix1[i][j];
-			ResultantMatrix[i][j + ReducedMatrixSize / 2] = AuxiliaryMatrix2[i][j];
-			ResultantMatrix[i + ReducedMatrixSize / 2][j] = AuxiliaryMatrix3[i][j];
-			ResultantMatrix[i + ReducedMatrixSize / 2][j + ReducedMatrixSize / 2] = AuxiliaryMatrix4[i][j];
-		}
-	}
-
-	///////////////////////////////////////////////////////////////////////////////
-	////////////////Выравнивание границ результирующей матрицы/////////////////////
-	///////////////////////////////////////////////////////////////////////////////
+	InitializeResultantMatrix(ResultantMatrix, ReducedMatrixSize / 2, AuxiliaryMatrix1, AuxiliaryMatrix2, AuxiliaryMatrix3, AuxiliaryMatrix4);
 
 	int CurrentPosition = 0, FinalRowAmount = 100, FinalColumnAmount = 100;
 	FormatResultantMatrix(ResultantMatrix, ReducedMatrixSize, CurrentPosition, FinalRowAmount);
@@ -240,9 +197,7 @@ void main()
 			FormattedResultantMatrix[i][j] = ResultantMatrix[i][j];
 	}
 
-	///////////////////////////////////////////////////////////////////////////////
-	///////////////////Вывод результирующей матрицы////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////
+
 	DrawMatrix(std::string("Результирующая матрица"), FormattedResultantMatrix, FinalRowAmount, FinalColumnAmount);
 	system("pause");
 
@@ -390,6 +345,42 @@ void FormatResultantMatrix(int**& const ResultantMatrix, const int& InitialMatri
 		if (CurrentPosition == 0 && i < FormattedMatrixSize)
 		{
 			FormattedMatrixSize = i;
+		}
+	}
+}
+
+void DefineIntermediateMatrixValues25(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1, int**& const LeftSubmatrix2,
+	int**& const RightSubmatrix, const int& i, const int& j) {
+	for (int z = 0; z < MatrixToChangeSize; z++)
+	{
+		MatrixToChange[i][j] += (LeftSubmatrix1[i][z] + LeftSubmatrix2[i][z]) * RightSubmatrix[z][j];
+	}
+}
+void DefineIntermediateMatrixValues34(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix, int**& const RightSubmatrix1,
+	int**& const RightSubmatrix2, const int& i, const int& j) {
+	for (int z = 0; z < MatrixToChangeSize; z++)
+	{
+		MatrixToChange[i][j] += LeftSubmatrix[i][z] * (RightSubmatrix1[z][j] - RightSubmatrix2[z][j]);
+	}
+}
+void DefineIntermediateMatrixValues67(int**& MatrixToChange, const int& MatrixToChangeSize, int**& const LeftSubmatrix1, int**& const LeftSubmatrix2,
+	int**& const RightSubmatrix1, int**& const RightSubmatrix2, const int& i, const int& j) {
+	for (int z = 0; z < MatrixToChangeSize; z++)
+	{
+		MatrixToChange[i][j] += (LeftSubmatrix1[i][z] - LeftSubmatrix2[i][z]) * (RightSubmatrix1[z][j] + RightSubmatrix2[z][j]);
+	}
+}
+
+void InitializeResultantMatrix(int**& ResultantMatrix, const int& ResultantMatrixHalfSize, int**& const AuxiliaryMatrix1,
+	int**& const AuxiliaryMatrix2, int**& const AuxiliaryMatrix3, int**& const AuxiliaryMatrix4) {
+	for (int i = 0; i < ResultantMatrixHalfSize; i++)
+	{
+		for (int j = 0; j < ResultantMatrixHalfSize ; j++)
+		{
+			ResultantMatrix[i][j] = AuxiliaryMatrix1[i][j];
+			ResultantMatrix[i][j + ResultantMatrixHalfSize] = AuxiliaryMatrix2[i][j];
+			ResultantMatrix[i + ResultantMatrixHalfSize][j] = AuxiliaryMatrix3[i][j];
+			ResultantMatrix[i + ResultantMatrixHalfSize][j + ResultantMatrixHalfSize] = AuxiliaryMatrix4[i][j];
 		}
 	}
 }
